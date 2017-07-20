@@ -45,7 +45,7 @@ int timespan_to_string(char** s, int64_t seconds)
   if (first_unit == unit || (last_unit == unit && cur_val >= 100))
     rc = asprintf(s, "%zu%s", cur_val, unit->unit);
   else
-    rc = asprintf(s, "%zu%s %2zu%s", cur_val, unit->unit, prev_val, prev_unit->unit);
+    rc = asprintf(s, "%zu%s%2zu%s", cur_val, unit->unit, prev_val, prev_unit->unit);
 
   return rc;
 }
@@ -61,12 +61,18 @@ static  const char* size_prefixes[] =
   " ", "k", "M", "G", "T", "P", "E"
 };
 
+#if 1
+#define B ""
+#else
+#define B "B"
+#endif
+
 static  const struct size_fmt size_fmts[] =
 {
-  {    1.0, "%4.3f%sB"  },
-  {   10.0, "%4.2f%sB"  },
-  {  100.0, "%4.1f%sB"  },
-  { 1000.0, "%3.0f.%sB" },
+  {    1.0, "%4.3f%s" B },
+  {   10.0, "%4.2f%s" B },
+  {  100.0, "%4.1f%s" B },
+  { 1000.0, "%3.0f.%s" B },
 };
 
 int bytes_to_string(char** s, size_t bytes)
@@ -89,7 +95,7 @@ int bytes_to_string(char** s, size_t bytes)
   }
 
   if (first_prefix == prefix)
-    rc = asprintf(s, "%4luB", (uint64_t)size);
+    rc = asprintf(s, "%4lu" B, (uint64_t)size);
   else
   {
     const struct size_fmt*  fmt;
