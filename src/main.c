@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
 
 #include <pci/pci.h>
 
@@ -204,14 +205,68 @@ void fill_output()
   }
 }
 
-int main()
+static const struct option  longopts[]  =
 {
+    { "reverse",  no_argument,        NULL, 'r' }
+  , { "sort",     required_argument,  NULL, 's' }
+  , {}
+};
+
+static const char* sort_opt_strings[] =
+{
+    [FLD_PORT_ID]     = "port"
+  , [FLD_BLK_DEV]     = "dev"
+  , [FLD_MODEL_NO]    = "model"
+  , [FLD_SERIAL_NO]   = "serial"
+  , [FLD_SIZE_BYTES]  = "size"
+  , [FLD_PWR_ON_HRS]  = "age"
+  , [FLD_TEMP_mC]     = "temp"
+  , [FLD_BAD_SECT]    = "sect"
+};
+
+int main(int argc, char* argv[])
+{
+  enum FIELD  sort_fld  = FLD_INVALID;
+  int         sort_dir  = 1;
+  int         opt;
+
+  while (-1 != (opt = getopt_long(argc, argv, "rs:", longopts, NULL)))
+  {
+    switch (opt)
+    {
+      case 'r':
+        sort_dir = -1;
+        break;
+      case 's':
+      {
+        enum FIELD f;
+        for (f = _FLD_FIRST; f < _FLD_MAX; f++)
+        {
+          if (0 == strcmp(optarg, sort_opt_strings[f]))
+          {
+            sort_fld = f;
+            break;
+          }
+        }
+        if (FLD_INVALID == sort_fld)
+          printf("Unrecognized parameter '%s' for option -s/--sort.\n", optarg);
+        break;
+      }
+      case '?':
+        break;
+      default:
+        printf("Unrecognized option '%c'\n", opt);
+        break;
+    }
+  }
+
   if (udisks2_init())
   {
     sysfs_init();
     sysfs_scan();
     output_fmt_init();
     fill_output();
+    output_fmt_sort(sort_fld, sort_dir);
     printf("  --- Disks ---\n");
     output_fmt_print();
     output_fmt_deinit();
