@@ -278,13 +278,13 @@ struct field_def
 struct field_def  fields[] =
 {
   [FLD_PORT_ID]     = { "Port",       JUST_RIGHT,   get_field_port_id   },
-  [FLD_BLK_DEV]     = { "Device",     JUST_RIGHT,   get_field_blk_dev   },
+  [FLD_BLK_DEV]     = { "Dev",        JUST_RIGHT,   get_field_blk_dev   },
   [FLD_MODEL_NO]    = { "Model #",    JUST_LEFT,    get_field_model     },
   [FLD_SERIAL_NO]   = { "Serial #",   JUST_LEFT,    get_field_serial    },
   [FLD_SIZE_BYTES]  = { "Size",       JUST_RIGHT,   get_field_size      },
   [FLD_PWR_ON_HRS]  = { "Age",        JUST_RIGHT,   get_field_age       },
-  [FLD_TEMP_mC]     = { "Temp.",      JUST_RIGHT,   get_field_temp      },
-  [FLD_BAD_SECT]    = { "Bad Sect.",  JUST_CENTER,  get_field_bad_sect  },
+  [FLD_TEMP_mC]     = { "Temp",       JUST_RIGHT,   get_field_temp      },
+  [FLD_BAD_SECT]    = { "Bad",        JUST_CENTER,  get_field_bad_sect  },
 };
 
 struct disk_info
