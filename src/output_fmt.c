@@ -432,18 +432,19 @@ void
 output_fmt_print(
 )
 {
-  size_t i;
+  const struct disk_info* disk = disks;
+  size_t                  i;
 
   printf("%s", colors[COLOR_BOLD]);
   for (i = 0; i < _FLD_MAX; i++)
     printf("%-*s  ", fields[i].max_len, fields[i].label);
   printf("%s\n", colors[COLOR_NONE]);
 
-  while (disks)
+  while (disk)
   {
-    struct disk_info* next = disks->next;
-    disk_info_print(disks);
-    disks = next;
+    struct disk_info* next = disk->next;
+    disk_info_print(disk);
+    disk = next;
   }
 }
 
