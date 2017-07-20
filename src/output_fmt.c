@@ -43,21 +43,6 @@ static const char*  colors[_COLOR_MAX] =
   , [COLOR_NONE]    = "\x1B[0m"
 };
 
-enum FIELD
-{
-    _FLD_FIRST      = 0
-  , FLD_PORT_ID
-                    = _FLD_FIRST
-  , FLD_BLK_DEV
-  , FLD_MODEL_NO
-  , FLD_SERIAL_NO
-  , FLD_SIZE_BYTES
-  , FLD_PWR_ON_HRS
-  , FLD_TEMP_mC
-  , FLD_BAD_SECT
-  , _FLD_MAX
-};
-
 struct field
 {
   char*       string;
