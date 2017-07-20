@@ -46,6 +46,7 @@ static const char*  colors[_COLOR_MAX] =
 struct field
 {
   char*       string;
+  const void* sort_val;
   int         len;
   enum COLOR  color;
   bool        bold;
@@ -67,7 +68,10 @@ get_field_port_id(
         int   rc      = -1;
   
   if (-1 != (rc = asprintf(&f->string, "%s", port_id)))
-    f->len = rc;
+  {
+    f->sort_val = f->string;
+    f->len      = rc;
+  }
 
   return rc;
 }
@@ -82,7 +86,10 @@ get_field_blk_dev(
         int                 rc  = -1;
 
   if (st)
-    rc = asprintf(&f->string, "sd%s", scsi_target_get_blk_dev(st));
+  {
+    if (-1 != (rc = asprintf(&f->string, "sd%s", scsi_target_get_blk_dev(st))))
+      f->sort_val = f->string;
+  }
   else
   {
     if (-1 != (rc = asprintf(&f->string, "N/C")))
@@ -105,7 +112,10 @@ get_field_model(
         int                   rc  = -1;
 
   if (bdi->model != BLK_DEV_INFO_UNSET_STRING)
-    rc = asprintf(&f->string, "%s", bdi->model);
+  {
+    if (-1 != (rc = asprintf(&f->string, "%s", bdi->model)))
+      f->sort_val = f->string;
+  }
   else
     rc = asprintf(&f->string, "%s", NA);
 
@@ -130,7 +140,10 @@ get_field_serial(
     rc = asprintf(&f->string, "%s", NA);
 
   if (-1 != rc)
-    f->len = rc;
+  {
+    f->sort_val = f->string;
+    f->len      = rc;
+  }
 
   return rc;
 }
@@ -145,7 +158,10 @@ get_field_size(
         int                   rc  = -1;
 
   if (bdi->size_byt != BLK_DEV_INFO_UNSET_U64)
-    rc = bytes_to_string(&f->string, bdi->size_byt);
+  {
+    if (-1 != (rc = bytes_to_string(&f->string, bdi->size_byt)))
+      f->sort_val = &bdi->size_byt;
+  }
   else
     rc = asprintf(&f->string, "%s", NA);
 
@@ -165,7 +181,10 @@ get_field_age(
         int                   rc  = -1;
 
   if (bdi->smt_pwr_on_sec != BLK_DEV_INFO_UNSET_I64)
-    rc = timespan_to_string(&f->string, bdi->smt_pwr_on_sec);
+  {
+    if (-1 != (rc = timespan_to_string(&f->string, bdi->smt_pwr_on_sec)))
+      f->sort_val = &bdi->smt_pwr_on_sec;
+  }
   else
     rc = asprintf(&f->string, "%s", NA);
 
@@ -199,6 +218,8 @@ get_field_temp(
         f->color  = COLOR_YELLOW;
       else
         f->color  = COLOR_GREEN;
+
+      f->sort_val = &bdi->smt_temp_kel;
     }
   }
   else
@@ -230,6 +251,8 @@ get_field_bad_sect(
       }
       else if ( bdi->smt_bad_sect > 0)
         f->color  = COLOR_YELLOW;
+
+      f->sort_val = &bdi->smt_bad_sect;
     }
   }
   else
@@ -430,6 +453,142 @@ output_fmt_print(
     struct disk_info* next = disk->next;
     disk_info_print(disk);
     disk = next;
+  }
+}
+
+static int64_t disk_info_compare(
+  enum FIELD              sort_fld
+, int                     sort_dir
+, const struct disk_info* ldi
+, const struct disk_info* rdi
+)
+{
+  /* sort_dir is used to force the N/A's to the bottom
+   * regardless of the user selected sort direction */
+  int64_t rc = 0;
+  switch (sort_fld)
+  {
+    case FLD_PORT_ID:
+    case FLD_BLK_DEV:
+    case FLD_MODEL_NO:
+    case FLD_SERIAL_NO:
+    {
+      const char* lhs = ldi->fields[sort_fld].sort_val;
+      const char* rhs = rdi->fields[sort_fld].sort_val;
+      if (lhs && rhs)
+        rc = strcasecmp(lhs, rhs);
+      else if (lhs)
+        rc = sort_dir * -1;
+      else if (rhs)
+        rc = sort_dir * 1;
+      break;
+    }
+    case FLD_SIZE_BYTES:
+    {
+      const uint64_t* ulhs  = ldi->fields[sort_fld].sort_val;
+      const uint64_t* urhs  = rdi->fields[sort_fld].sort_val;
+      if (ulhs && urhs)
+      {
+        const int64_t lhs = (int64_t)MIN(*ulhs, INT64_MAX);
+        const int64_t rhs = (int64_t)MIN(*urhs, INT64_MAX);
+        rc = lhs - rhs;
+      }
+      else if (ulhs)
+        rc = sort_dir * -1;
+      else if (urhs)
+        rc = sort_dir * 1;
+      break;
+    }
+    case FLD_PWR_ON_HRS:
+    {
+      const int64_t*  lhs = ldi->fields[sort_fld].sort_val;
+      const int64_t*  rhs = rdi->fields[sort_fld].sort_val;
+      if (lhs && rhs)
+        rc = *lhs - *rhs;
+      else if (lhs)
+        rc = sort_dir * -1;
+      else if (rhs)
+        rc = sort_dir * 1;
+      break;
+    }
+    case FLD_TEMP_mC:
+    {
+      const double* ulhs  = ldi->fields[sort_fld].sort_val;
+      const double* urhs  = rdi->fields[sort_fld].sort_val;
+      if (ulhs && urhs)
+      {
+        const int64_t lhs = (int64_t)MIN(*ulhs*1000.0, (double)INT64_MAX);
+        const int64_t rhs = (int64_t)MIN(*urhs*1000.0, (double)INT64_MAX);
+        rc = lhs - rhs;
+      }
+      else if (ulhs)
+        rc = sort_dir * -1;
+      else if (urhs)
+        rc = sort_dir * 1;
+      break;
+    }
+    case FLD_BAD_SECT:
+    {
+      const int64_t*  lhs = ldi->fields[sort_fld].sort_val;
+      const int64_t*  rhs = rdi->fields[sort_fld].sort_val;
+      if (lhs && rhs)
+        rc = *lhs - *rhs;
+      else if (lhs)
+        rc = sort_dir * -1;
+      else if (rhs)
+        rc = sort_dir * 1;
+      break;
+    }
+    default:
+      break;
+  }
+  return rc;
+}
+
+void output_fmt_sort(
+  enum FIELD  sort_fld
+, int         sort_dir
+)
+{
+  if (FLD_INVALID != sort_fld)
+  {
+    struct disk_info* prev  = NULL;
+    struct disk_info* disk  = disks;
+
+    while (disk)
+    {
+      struct disk_info* n_prev = disk;
+      struct disk_info* needle = disk->next;
+
+      while (needle)
+      {
+        int64_t dir = sort_dir * disk_info_compare(sort_fld, sort_dir, disk, needle);
+
+        /* Try to do something sane with equivalent values */
+        if (0 == dir)
+          dir = sort_dir * disk_info_compare(FLD_BLK_DEV, sort_dir, disk, needle);
+        if (0 == dir)
+          dir = sort_dir * disk_info_compare(FLD_PORT_ID, sort_dir, disk, needle);
+
+        if (0 < dir)
+        {
+          /* remove needle */
+          n_prev->next = needle->next;
+          /* insert needle at head */
+          if (!prev)
+            disks = needle;
+          else
+            prev->next = needle;
+          needle->next = disk;
+          /* needle is now the min value */
+          disk = needle;
+        }
+        n_prev = needle;
+        needle = needle->next;
+      }
+      prev = disk;
+      disk = disk->next;
+    }
   }
 }
 

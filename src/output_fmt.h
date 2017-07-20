@@ -37,6 +37,12 @@ output_fmt_add_dev(
 );
 
 void
+output_fmt_sort(
+  enum FIELD  sort_fld
+, int         sort_dir
+);
+
+void
 output_fmt_deinit(
 );
 
