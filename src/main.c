@@ -207,7 +207,8 @@ void fill_output()
 
 static const struct option  longopts[]  =
 {
-    { "reverse",  no_argument,        NULL, 'r' }
+    { "help",     no_argument,        NULL, 'h' }
+  , { "reverse",  no_argument,        NULL, 'r' }
   , { "sort",     required_argument,  NULL, 's' }
   , {}
 };
@@ -224,13 +225,45 @@ static const char* sort_opt_strings[] =
   , [FLD_BAD_SECT]    = "sect"
 };
 
+static void print_help(const char* argv0)
+{
+  char*       tmp       = strdup(argv0);
+  const char* progname;
+  size_t  i;
+
+  if (tmp)
+  {
+    char* slash = strrchr(tmp, '/');
+    if (slash)
+      progname = slash + 1;
+    else
+      progname = tmp;
+  }
+  else
+    progname = argv0;
+
+  printf("Usage: %s [OPTION]...\n\n", progname);
+  printf(
+      "Mandatory arguments to long options are also mandatory for short options.\n"
+      " -h  --help        Display this help message.\n"
+      " -r  --reverse     Reverse sort order.\n"
+      " -s  --sort=<ARG>  Sort output by ARG. Accepted values for ARG are: \n");
+  printf(
+      "                   %s", sort_opt_strings[_FLD_FIRST]);
+  for (i = _FLD_FIRST + 1; i < _FLD_MAX; i++)
+    printf(", %s", sort_opt_strings[i]);
+  putchar('\n');
+
+  free(tmp);
+}
+
 int main(int argc, char* argv[])
 {
   enum FIELD  sort_fld  = FLD_INVALID;
   int         sort_dir  = 1;
   int         opt;
 
-  while (-1 != (opt = getopt_long(argc, argv, "rs:", longopts, NULL)))
+  while (-1 != (opt = getopt_long(argc, argv, "hrs:", longopts, NULL)))
   {
     switch (opt)
     {
@@ -254,8 +287,10 @@ int main(int argc, char* argv[])
       }
       case '?':
         break;
+      case 'h':
       default:
         printf("Unrecognized option '%c'\n", opt);
+        print_help(argv[0]);
         break;
     }
   }
