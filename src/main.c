@@ -281,16 +281,16 @@ int main(int argc, char* argv[])
             break;
           }
         }
-        if (FLD_INVALID == sort_fld)
-          printf("Unrecognized parameter '%s' for option -s/--sort.\n", optarg);
-        break;
+        if (FLD_INVALID != sort_fld)
+          break;
+        /* else fall through on bad param */
+        printf("Unrecognized parameter '%s' for option -s/--sort.\n", optarg);
       }
       case '?':
-        break;
       case 'h':
       default:
-        printf("Unrecognized option '%c'\n", opt);
         print_help(argv[0]);
+        exit(1);
         break;
     }
   }
