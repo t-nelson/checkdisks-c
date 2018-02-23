@@ -46,5 +46,9 @@ void
 output_fmt_deinit(
 );
 
+void
+output_fmt_enable_colors(
+  bool enable
+);
 #endif /* OUTPUT_FMT_H__ */
 

@@ -31,17 +31,41 @@ enum COLOR
   , _COLOR_MAX
 };
 
-static const char*  colors[_COLOR_MAX] =
+enum COLORSET
 {
-    [COLOR_RED]     = "\x1B[31m"
-  , [COLOR_GREEN]   = "\x1B[32m"
-  , [COLOR_YELLOW]  = "\x1B[33m"
-  , [COLOR_BLUE]    = "\x1B[34m"
-  , [COLOR_MAGENTA] = "\x1B[35m"
-  , [COLOR_CYAN]    = "\x1B[36m"
-  , [COLOR_BOLD]    = "\x1B[1m"
-  , [COLOR_NONE]    = "\x1B[0m"
+    _COLORSET_FIRST   = 0
+  , COLORSET_DEFAULT  = _COLORSET_FIRST
+  , COLORSET_NONE
+  , _COLORSET_MAX
 };
+
+static const char*  colorset[_COLORSET_MAX][_COLOR_MAX] =
+{
+    [COLORSET_NONE] =
+    {
+        [COLOR_RED]     = ""
+      , [COLOR_GREEN]   = ""
+      , [COLOR_YELLOW]  = ""
+      , [COLOR_BLUE]    = ""
+      , [COLOR_MAGENTA] = ""
+      , [COLOR_CYAN]    = ""
+      , [COLOR_BOLD]    = ""
+      , [COLOR_NONE]    = ""
+    }
+  , [COLORSET_DEFAULT] =
+    {
+        [COLOR_RED]     = "\x1B[31m"
+      , [COLOR_GREEN]   = "\x1B[32m"
+      , [COLOR_YELLOW]  = "\x1B[33m"
+      , [COLOR_BLUE]    = "\x1B[34m"
+      , [COLOR_MAGENTA] = "\x1B[35m"
+      , [COLOR_CYAN]    = "\x1B[36m"
+      , [COLOR_BOLD]    = "\x1B[1m"
+      , [COLOR_NONE]    = "\x1B[0m"
+    }
+};
+
+static const char** colors  = colorset[COLORSET_DEFAULT];
 
 struct field
 {
@@ -626,5 +650,14 @@ output_fmt_add_dev(
   }
 
   return rc;
+}
+
+void
+output_fmt_enable_colors(
+  bool enable
+)
+{
+  enum COLORSET cs  = enable ? COLORSET_DEFAULT : COLORSET_NONE;
+  colors = colorset[cs];
 }
 

@@ -208,6 +208,7 @@ void fill_output()
 static const struct option  longopts[]  =
 {
     { "help",     no_argument,        NULL, 'h' }
+  , { "nocolor",  no_argument,        NULL, 'n' }
   , { "reverse",  no_argument,        NULL, 'r' }
   , { "sort",     required_argument,  NULL, 's' }
   , {}
@@ -246,6 +247,7 @@ static void print_help(const char* argv0)
   printf(
       "Mandatory arguments to long options are also mandatory for short options.\n"
       " -h  --help        Display this help message.\n"
+      " -n  --nocolor     Do not display color codes.\n"
       " -r  --reverse     Reverse sort order.\n"
       " -s  --sort=<ARG>  Sort output by ARG. Accepted values for ARG are: \n");
   printf(
@@ -263,12 +265,15 @@ int main(int argc, char* argv[])
   int         sort_dir  = 1;
   int         opt;
 
-  while (-1 != (opt = getopt_long(argc, argv, "hrs:", longopts, NULL)))
+  while (-1 != (opt = getopt_long(argc, argv, "hnrs:", longopts, NULL)))
   {
     switch (opt)
     {
       case 'r':
         sort_dir = -1;
+        break;
+      case 'n':
+        output_fmt_enable_colors(false);
         break;
       case 's':
       {
