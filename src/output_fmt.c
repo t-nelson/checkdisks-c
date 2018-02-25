@@ -236,9 +236,18 @@ temp_conv_C(
   return temp_K - 273.0;
 }
 
+double
+temp_conv_F(
+  double temp_K
+)
+{
+  return (((temp_K - 273.0) * 9.0) / 5.0) + 32.0;
+}
+
 static const struct temp_param  temp_params[_TEMP_UNIT_MAX] =
 {
     [TEMP_UNIT_CELCIUS]   = { "C",  temp_conv_C,  40.0,   49.0  }
+  , [TEMP_UNIT_FARENHEIT] = { "F",  temp_conv_F,  104.0,  120.2 }
 };
 
 enum TEMP_UNIT  output_fmt_temp_unit  = TEMP_UNIT_CELCIUS;
