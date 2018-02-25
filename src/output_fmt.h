@@ -20,6 +20,15 @@ enum FIELD
   , _FLD_MAX
 };
 
+enum TEMP_UNIT
+{
+    _TEMP_UNIT_FIRST    = 0
+  , TEMP_UNIT_CELCIUS   = _TEMP_UNIT_FIRST
+  , _TEMP_UNIT_MAX
+};
+
+extern  enum TEMP_UNIT  output_fmt_temp_unit;
+
 struct scsi_target;
 
 void

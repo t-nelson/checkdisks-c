@@ -218,6 +218,31 @@ get_field_age(
   return rc;
 }
 
+typedef double (*temp_conv)(double temp_K);
+
+struct temp_param
+{
+  const char* sym;
+  temp_conv   conv;
+  double      med;
+  double      high;
+};
+
+double
+temp_conv_C(
+  double temp_K
+)
+{
+  return temp_K - 273.0;
+}
+
+static const struct temp_param  temp_params[_TEMP_UNIT_MAX] =
+{
+    [TEMP_UNIT_CELCIUS]   = { "C",  temp_conv_C,  40.0,   49.0  }
+};
+
+enum TEMP_UNIT  output_fmt_temp_unit  = TEMP_UNIT_CELCIUS;
+
 static int
 get_field_temp(
         struct field* f
@@ -229,16 +254,16 @@ get_field_temp(
 
   if (bdi->smt_temp_kel != BLK_DEV_INFO_UNSET_DBL)
   {
-    double  temp_C  = (bdi->smt_temp_kel - 273.0);
-    double  temp_F  = temp_C * 9.0 / 5.0 + 32.0;
-    if (-1 != (rc = asprintf(&f->string, "%.1lfF", temp_F)))
+    const struct temp_param*  tp   = &temp_params[output_fmt_temp_unit];
+          double              temp = tp->conv(bdi->smt_temp_kel);
+    if (-1 != (rc = asprintf(&f->string, "%.1lf%s", temp, tp->sym)))
     {
-      if (      temp_F > 120.0)
+      if (      temp  > tp->high)
       {
         f->color  = COLOR_RED;
         f->bold   = true;
       }
-      else if ( temp_F > 110.0)
+      else if ( temp  > tp->med)
         f->color  = COLOR_YELLOW;
       else
         f->color  = COLOR_GREEN;
