@@ -9,6 +9,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define SYSFS_PCI_BASE  "/sys/bus/pci/devices"
 
@@ -239,18 +240,20 @@ int select_dirs(const char* path, const dir_selector_fn* dsfs, size_t ndsfs)
 
   if (NULL != (dp = opendir(path)))
   {
-    struct dirent*  de;
-    if (NULL != (de = malloc(de_size)));
     {
-      struct dirent*  res;
+      struct dirent*  de;
       char            next_path[PATH_MAX];
 
       rc = 0;
 
-      while (0 == readdir_r(dp, de, &res) && res)
+      do
       {
         size_t  s;
 
+        errno = 0;  // 'cause readdir() is lame and readdir_r is deprecated
+        de    = readdir(dp);
+        if (NULL != de)
+        {
         for (s = 0; s < ndsfs; s++)
         {
           const dir_selector_fn*  next_sel;
@@ -274,7 +277,10 @@ int select_dirs(const char* path, const dir_selector_fn* dsfs, size_t ndsfs)
             }
           }
         }
-      }
+        }
+        else if (0 != errno)
+          perror("readdir");
+      } while (NULL != de);
 
       if (rc == 0)
       {
@@ -285,8 +291,6 @@ int select_dirs(const char* path, const dir_selector_fn* dsfs, size_t ndsfs)
             info_add_host(path);
         }
       }
-
-      free(de);
     }
     closedir(dp);
   }
