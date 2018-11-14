@@ -307,7 +307,6 @@ int main(int argc, char* argv[])
 
   if (udisks2_init())
   {
-    sysfs_init();
     sysfs_scan();
     output_fmt_init();
     fill_output();

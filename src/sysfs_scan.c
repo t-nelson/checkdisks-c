@@ -13,8 +13,6 @@
 
 #define SYSFS_PCI_BASE  "/sys/bus/pci/devices"
 
-static size_t de_size = 0;
-
 typedef bool (*dir_selector_fn)(const char* d_name, const void** next_sel, size_t* n_next_sel);
 
 static bool scsi_dev_dir_selector(const char* d_name, const void** next_sel, size_t* n_next_sel)
@@ -294,18 +292,6 @@ int select_dirs(const char* path, const dir_selector_fn* dsfs, size_t ndsfs)
   }
 
   return rc;
-}
-
-void
-sysfs_init(
-)
-{
-  long              name_max    = pathconf(SYSFS_PCI_BASE, _PC_NAME_MAX);
-  size_t            de_base_len = offsetof(struct dirent, d_name);
-  if (-1 == name_max)
-    name_max = 255;
-
-  de_size = de_base_len + name_max + 1;
 }
 
 int
