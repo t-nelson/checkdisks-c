@@ -24,8 +24,8 @@ static const struct age_unit age_units[] =
 int timespan_to_string(char** s, int64_t seconds)
 {
   const size_t                    n_units     = ARRAY_SIZE(age_units);
-  const struct  age_unit  const * first_unit  = &age_units[0];
-  const struct  age_unit  const * last_unit   = &age_units[n_units - 1];
+  const struct  age_unit  * const first_unit  = &age_units[0];
+  const struct  age_unit  * const last_unit   = &age_units[n_units - 1];
   const struct  age_unit*         prev_unit   = NULL;
   const struct  age_unit*         unit;
         int64_t                   prev_val    = 0;

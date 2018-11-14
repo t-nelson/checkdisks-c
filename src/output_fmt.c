@@ -14,7 +14,7 @@
 #define NA_     "N/A"
 #define NA_LEN  (sizeof(NA_) - 1)
 
-const char const* NA  = NA_;
+const char  * const NA  = NA_;
 
 enum COLOR
 {
