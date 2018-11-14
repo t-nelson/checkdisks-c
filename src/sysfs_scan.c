@@ -240,20 +240,19 @@ int select_dirs(const char* path, const dir_selector_fn* dsfs, size_t ndsfs)
 
   if (NULL != (dp = opendir(path)))
   {
+    struct dirent*  de;
+    char            next_path[PATH_MAX];
+
+    rc = 0;
+
+    do
     {
-      struct dirent*  de;
-      char            next_path[PATH_MAX];
+      size_t  s;
 
-      rc = 0;
-
-      do
+      errno = 0;  // 'cause readdir() is lame and readdir_r is deprecated
+      de    = readdir(dp);
+      if (NULL != de)
       {
-        size_t  s;
-
-        errno = 0;  // 'cause readdir() is lame and readdir_r is deprecated
-        de    = readdir(dp);
-        if (NULL != de)
-        {
         for (s = 0; s < ndsfs; s++)
         {
           const dir_selector_fn*  next_sel;
@@ -277,19 +276,18 @@ int select_dirs(const char* path, const dir_selector_fn* dsfs, size_t ndsfs)
             }
           }
         }
-        }
-        else if (0 != errno)
-          perror("readdir");
-      } while (NULL != de);
+      }
+      else if (0 != errno)
+        perror("readdir");
+    } while (NULL != de);
 
-      if (rc == 0)
+    if (rc == 0)
+    {
+      char* s = strrchr(path, '/');
+      if (s)
       {
-        char* s = strrchr(path, '/');
-        if (s)
-        {
-          if (scsi_host_dir_selector(s+1, NULL, NULL))
-            info_add_host(path);
-        }
+        if (scsi_host_dir_selector(s+1, NULL, NULL))
+          info_add_host(path);
       }
     }
     closedir(dp);
