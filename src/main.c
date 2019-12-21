@@ -263,7 +263,7 @@ static void print_help(const char* argv0)
 
 int main(int argc, char* argv[])
 {
-  enum FIELD  sort_fld  = FLD_INVALID;
+  enum FIELD  sort_fld  = FLD_BLK_DEV;
   int         sort_dir  = 1;
   int         opt;
 
