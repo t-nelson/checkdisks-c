@@ -216,7 +216,13 @@ parse_blk_dev_path(
     do
     {
       if (1 == sscanf(slash, "/sd%[^0-9/]", blk_dev))
-        continue;
+      {
+        strncpy(blk_dev, slash+1, MAX_BLK_DEV_LEN);
+      }
+      else if (2 == sscanf(slash, "/nvme%un%u", &dummy[0], &dummy[0]))
+      {
+        strncpy(blk_dev, slash+1, MAX_BLK_DEV_LEN);
+      }
       else if (4 == sscanf(slash, "/%u:%u:%u:%u", &dummy[0], &dummy[1], &dummy[2], &dummy[3]))
       {
         tup->host     = dummy[0];

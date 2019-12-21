@@ -211,6 +211,49 @@ static bool usb_bus_dir_selector(const char* d_name, const void** next_sel, size
   return rc;
 }
 
+static bool nvme_namespace_dir_selector(const char* d_name, const void** next_sel, size_t* n_next_sel)
+{
+  unsigned int  dummy;
+  bool          rc      = (2 == sscanf(d_name, "nvme%un%u", &dummy, &dummy));
+
+  if (rc && next_sel && n_next_sel)
+  {
+    *next_sel   = NULL;
+    *n_next_sel = 0;
+  }
+
+  return rc;
+}
+
+static bool nvme_dev_dir_selector(const char* d_name, const void** next_sel, size_t* n_next_sel)
+{
+  static const  dir_selector_fn next_selectors[]  = { nvme_namespace_dir_selector };
+                unsigned int    dummy;
+                bool            rc                = (1 == sscanf(d_name, "nvme%u", &dummy));
+
+  if (rc && next_sel && n_next_sel)
+  {
+    *next_sel   = next_selectors;
+    *n_next_sel = ARRAY_SIZE(next_selectors);
+  }
+
+  return rc;
+}
+
+static bool nvme_bus_dir_selector(const char* d_name, const void** next_sel, size_t* n_next_sel)
+{
+  static const  dir_selector_fn next_selectors[]  = { nvme_dev_dir_selector };
+                bool            rc                = (0 == strcmp(d_name, "nvme"));
+
+  if (rc && next_sel && n_next_sel)
+  {
+    *next_sel   = next_selectors;
+    *n_next_sel = ARRAY_SIZE(next_selectors);
+  }
+
+  return rc;
+}
+
 static bool pci_dev_dir_selector(const char* d_name, const void** next_sel, size_t* n_next_sel)
 {
   static const  dir_selector_fn next_selectors[]  = {
@@ -218,6 +261,7 @@ static bool pci_dev_dir_selector(const char* d_name, const void** next_sel, size
                                                     , ata_dev_dir_selector
                                                     , scsi_host_dir_selector
                                                     , usb_bus_dir_selector
+                                                    , nvme_bus_dir_selector
                                                     };
                 unsigned int    dummy;
                 bool            rc                = (4 == sscanf(d_name, "%4x:%2x:%2x.%x", &dummy, &dummy, &dummy, &dummy));

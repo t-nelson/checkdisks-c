@@ -295,7 +295,7 @@ udisks2_get_blk_dev_smart(
   char*                 udisks2_blk_dev_path;
   struct blk_dev_info*  bdi                 = NULL;
 
-  if (-1 != asprintf(&udisks2_blk_dev_path, "%s/block_devices/sd%s", UDISKS_BASE_PATH, blk_dev))
+  if (-1 != asprintf(&udisks2_blk_dev_path, "%s/block_devices/%s", UDISKS_BASE_PATH, blk_dev))
   {
     DBusMessage*  req;
   

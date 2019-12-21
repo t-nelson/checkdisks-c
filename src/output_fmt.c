@@ -111,7 +111,7 @@ get_field_blk_dev(
 
   if (st)
   {
-    if (-1 != (rc = asprintf(&f->string, "sd%s", scsi_target_get_blk_dev(st))))
+    if (-1 != (rc = asprintf(&f->string, "%s", scsi_target_get_blk_dev(st))))
       f->sort_val = f->string;
   }
   else
