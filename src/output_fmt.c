@@ -261,7 +261,7 @@ get_field_temp(
   const struct blk_dev_info* bdi = arg;
         int                   rc  = -1;
 
-  if (bdi->smt_temp_kel != BLK_DEV_INFO_UNSET_DBL)
+  if (bdi->smt_temp_kel > 0.0)
   {
     const struct temp_param*  tp   = &temp_params[output_fmt_temp_unit];
           double              temp = tp->conv(bdi->smt_temp_kel);
