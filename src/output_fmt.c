@@ -204,7 +204,7 @@ get_field_age(
   const struct blk_dev_info*  bdi = arg;
         int                   rc  = -1;
 
-  if (bdi->smt_pwr_on_sec != BLK_DEV_INFO_UNSET_I64)
+  if (bdi->smt_pwr_on_sec > 0)
   {
     if (-1 != (rc = timespan_to_string(&f->string, bdi->smt_pwr_on_sec)))
       f->sort_val = &bdi->smt_pwr_on_sec;
